@@ -78,3 +78,107 @@ Quin workflow proposaries (branching, PR, CI/CD)?
 Què faries si algú fa un commit que falla l'anàlisi?
 
 · Faria, a GitHub, projectes amb user stories, issues i sub-issues en funció de les funcionalitats del codi. Un cop finalitzades cada issue de cada US, implementaria un test unitari automatitzat per cada cas, assegurant la qualitat del codi. El fluxe de treball el separaria per funcionalitat. Cada funcionalitat tindrà una branca, i cada branca tindrà el seu CI per provar les funcionalitats. Aquest CI ha de reaccionar al moment de fer una PR, i s'ha d'aprovar en el moment en què el CI no dona cap error i el codi té una puntuació acceptable a SonarQube. Si algú fa un commit que falla l'anàlisi, aquesta part del codi s'ha de modificar per tal d'aconseguir que el codi funcioni bé.
+
+
+
+# MSTest 
+
+Primerament hem de crear la llibreria del programa a testejar, on ficarem el Program.cs (Hem d'anomenar-ho com a (nom)Utils.cs pel codi, i (nom)TestUtils.cs pel test.
+
+A la llibreria, creem una classe. Implementem i reanomenem.
+
+```c#
+using System.Linq.Expressions;
+
+namespace WarriorClass
+{
+    public class WarriorUtils
+    {
+        public static void CalculateWarriorStatus(int hp, out string status,
+            out double speedPercentage, out double attackPercentage, out bool canRun, out string screenColour)
+        {
+            hp = Math.Min(hp, 100);
+
+            if (hp == 0)
+            {
+                status = "Dead";
+                speedPercentage = 0;
+                attackPercentage = 0;
+                canRun = false;
+                screenColour = "red";
+            }
+            else if (hp >= 1 && hp <= 25)
+            {
+                status = "Critical";
+                speedPercentage = 50;
+                attackPercentage = 50;
+                canRun = false;
+                screenColour = "normal";
+            }
+            else if (hp >= 26 && hp <= 50)
+            {
+                status = "Severely Injured";
+                speedPercentage = 70;
+                attackPercentage = 80;
+                canRun = false;
+                screenColour = "normal";
+            }
+            else if (hp >= 51 && hp <= 75)
+            {
+                status = "Injured";
+                speedPercentage = 90;
+                attackPercentage = 100;
+                canRun = true;
+                screenColour = "normal";
+            }
+            else
+            {
+                status = "Healthy";
+                speedPercentage = 100;
+                attackPercentage = 100;
+                canRun = true;
+                screenColour = "normal";
+            }
+        }
+    }
+}
+
+
+```
+
+Després d'implementar el codi, creem el test. Hem d'anar a l'Explorador d'Arxius > Afegir projecte > MSTest (C#)
+<img width="648" height="542" alt="image" src="https://github.com/user-attachments/assets/bcefcbec-aaff-41be-b078-b95bd9685815" />
+
+
+Un cop creat el Test, hem de fer l'AAA (Arrange > Act > Assert). Primerament hem de referenciar el projecte. Explorador d'Arxius > Afegir > Referenciar Projecte > Seleccionem la classe a referenciar. A l'arxiu .csproj, s'ens afegirà una nova línea.
+<img width="1333" height="588" alt="image" src="https://github.com/user-attachments/assets/0772bba0-954b-4118-97ca-bb51e8fbec82" />
+
+```c#
+using TestWarriorMethods;
+using WarriorClass;
+
+namespace TestWarriorMethods
+{
+    [TestClass]
+    public sealed class TestWarriorUtils
+    {
+        [TestMethod]
+        public void TC1_VerifyStatus_With_MaxHP()
+        {
+            // Arrange
+            double speed, attack;
+            bool canRun;
+            string status, screenColour;
+            // Act
+            WarriorUtils.CalculateWarriorStatus(100, out status, out speed, out attack, out canRun, out screenColour);
+
+            // Assert
+            Assert.AreEqual("Healthy", status);
+            Assert.AreEqual(100, speed);
+            Assert.AreEqual(100, attack);
+            Assert.IsTrue(canRun);
+            Assert.AreEqual("normal", screenColour);
+        }
+    }
+}
+```
