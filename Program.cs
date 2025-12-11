@@ -2,16 +2,17 @@
 
 namespace BibliotecaDemo
 {
-    class Program
+    public class Program
     {
-        static string[] titols = new string[100];
-        static string[] autors = new string[100];
-        static int[] anys = new int[100];
-        static int comptador = 0;
+        public static string[] titols = new string[100];
+        public static string[] autors = new string[100];
+        public static int[] anys = new int[100];
+        public static int comptador;
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            bool sortir = false;
+            int opcio;
+            bool sortir = false, isOpcio;
 
             Console.WriteLine("=== SISTEMA DE GESTIÓ DE BIBLIOTECA ===");
             Console.WriteLine();
@@ -19,20 +20,23 @@ namespace BibliotecaDemo
             // Afegir alguns llibres de prova
             AfegirLlibre(ref titols, ref autors, ref anys, ref comptador, "El Quixot", "Cervantes", 1605);
             AfegirLlibre(ref titols, ref autors, ref anys, ref comptador, "1984", "Orwell", 1949);
-            AfegirLlibre(ref titols, ref autors, ref anys, ref comptador, "", "", 0); // ERROR: dades buides permeses
+            AfegirLlibre(ref titols, ref autors, ref anys, ref comptador, "", "", 0);
 
             while (!sortir)
             {
                 MostrarMenu();
-                string opcio = Console.ReadLine();
 
+                do
+                {
+                    isOpcio = Int32.TryParse(Console.ReadLine(), out opcio);
+                } while (!isOpcio);
                 ProcessarOpcio(opcio, ref sortir);
             }
 
             Console.WriteLine("Adéu!");
         }
 
-        static void MostrarMenu()
+        public static void MostrarMenu()
         {
             Console.WriteLine("\n--- MENÚ PRINCIPAL ---");
             Console.WriteLine("1. Mostrar tots els llibres");
@@ -43,66 +47,83 @@ namespace BibliotecaDemo
             Console.Write("Tria una opció: ");
         }
 
-        static void ProcessarOpcio(string opcio, ref bool sortir)
+        public static void ProcessarOpcio(int opcio, ref bool sortir)
         {
-            if (opcio == "1")
-            {
-                MostrarTotesLlibres(titols, autors, anys, comptador);
-            }
-            else if (opcio == "2")
-            {
-                Console.Write("Introdueix el títol a cercar: ");
-                string titol = Console.ReadLine();
-                int posicio = CercarLlibre(titols, comptador, titol);
+            bool isAny;
+            string titol;
 
-                if (posicio >= 0)
-                {
-                    Console.WriteLine($"\nLlibre trobat:");
-                    Console.WriteLine($"Títol: {titols[posicio]}");
-                    Console.WriteLine($"Autor: {autors[posicio]}");
-                    Console.WriteLine($"Any: {anys[posicio]}");
-                }
-                else
-                {
-                    Console.WriteLine("Llibre no trobat.");
-                }
-            }
-            else if (opcio == "3")
+            do
             {
-                Console.Write("Títol: ");
-                string titol = Console.ReadLine();
-                Console.Write("Autor: ");
-                string autor = Console.ReadLine();
-                Console.Write("Any: ");
-                int any = int.Parse(Console.ReadLine()); // ERROR: sense validació
+                switch (opcio)
+                {
+                    case 1:
+                        MostrarTotesLlibres(titols, autors, anys, comptador);
+                        break;
+                    case 2:
 
-                AfegirLlibre(ref titols, ref autors, ref anys, ref comptador, titol, autor, any);
-            }
-            else if (opcio == "4")
+                        Console.Write("Introdueix el títol a cercar: ");
+                        titol = Console.ReadLine()!;
+                        int posicio = CercarLlibre(titols, comptador, titol);
+
+                        if (posicio >= 0)
+                        {
+                            Console.WriteLine($"\nLlibre trobat:");
+                            Console.WriteLine($"Títol: {titols[posicio]}");
+                            Console.WriteLine($"Autor: {autors[posicio]}");
+                            Console.WriteLine($"Any: {anys[posicio]}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Llibre no trobat.");
+                        }
+
+                        break;
+                    case 3:
+                        Console.Write("Títol: ");
+                        titol = Console.ReadLine()!;
+                        Console.Write("Autor: ");
+                        string autor = Console.ReadLine()!;
+                        Console.Write("Any: ");
+
+                        do
+                        {
+                            isAny = Int32.TryParse(Console.ReadLine(), out int any);
+                            AfegirLlibre(ref titols, ref autors, ref anys, ref comptador, titol, autor, any);
+                        } while (!isAny);
+                        break;
+                    case 4:
+
+                        MostrarEstadistiques(titols, autors, anys, comptador);
+                        break;
+                    case 5:
+
+                        sortir = true;
+                        break;
+                }
+            } while (opcio < 1 && opcio > 5);
+        }
+
+        public static void AfegirLlibre(ref string[] titols, ref string[] autors, ref int[] anys, ref int comptador, string titol, string autor, int any)
+        {
+
+
+
+            if (String.IsNullOrWhiteSpace(titol) || String.IsNullOrWhiteSpace(autor) || any <= 0)
             {
-                MostrarEstadistiques(titols, autors, anys, comptador);
-            }
-            else if (opcio == "5")
-            {
-                sortir = true;
+                Console.WriteLine("Error: No es poden afegir dades buides o invàlides.");
             }
             else
             {
-                Console.WriteLine("Opció no vàlida.");
+                titols[comptador] = titol;
+                autors[comptador] = autor;
+                anys[comptador] = any;
+                comptador++;
+                Console.WriteLine("Llibre afegit correctament.");
             }
+
         }
 
-        static void AfegirLlibre(ref string[] titols, ref string[] autors, ref int[] anys, ref int comptador, string titol, string autor, int any)
-        {
-            titols[comptador] = titol;
-            autors[comptador] = autor;
-            anys[comptador] = any;
-            comptador++;
-
-            Console.WriteLine("Llibre afegit correctament.");
-        }
-
-        static int CercarLlibre(string[] titols, int comptador, string titolCercat)
+        public static int CercarLlibre(string[] titols, int comptador, string titolCercat)
         {
             for (int i = 0; i < comptador; i++)
             {
@@ -114,7 +135,7 @@ namespace BibliotecaDemo
             return -1;
         }
 
-        static void MostrarTotesLlibres(string[] titols, string[] autors, int[] anys, int comptador)
+        public static void MostrarTotesLlibres(string[] titols, string[] autors, int[] anys, int comptador)
         {
             Console.WriteLine("\n=== CATÀLEG DE LLIBRES ===");
 
@@ -129,7 +150,7 @@ namespace BibliotecaDemo
             Console.WriteLine($"\nTotal de llibres: {comptador}");
         }
 
-        static void MostrarEstadistiques(string[] titols, string[] autors, int[] anys, int comptador)
+        public static void MostrarEstadistiques(string[] titols, string[] autors, int[] anys, int comptador)
         {
             if (comptador == 0)
             {
@@ -177,7 +198,7 @@ namespace BibliotecaDemo
             ClassificarPerPeriode(anys, comptador);
         }
 
-        static void ClassificarPerPeriode(int[] anys, int comptador)
+        public static void ClassificarPerPeriode(int[] anys, int comptador)
         {
             int medieval = 0;
             int renaixement = 0;
